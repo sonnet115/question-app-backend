@@ -52,6 +52,15 @@ public class QuestionSetsController {
 
     }
 
+    @GetMapping("/get/{id}")
+    public ResponseEntity<?> getById(@PathVariable Long id) {
+        Optional<QuestionSets> questionSets = questionSetsRepository.findById(id);
+        if (questionSets.isPresent()) {
+            return ResponseEntity.ok(questionSets.get());
+        }
+        return ResponseEntity.ok("Not found");
+    }
+
     @PutMapping("/update/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody QuestionSetRequest questionSetRequest) {
         QuestionSets questionSets = questionSetsRepository.getById(id);
