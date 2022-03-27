@@ -3,6 +3,7 @@ package com.bezkoder.springjwt.controllers;
 import com.bezkoder.springjwt.models.QuestionSets;
 import com.bezkoder.springjwt.models.User;
 import com.bezkoder.springjwt.payload.request.QuestionSetRequest;
+import com.bezkoder.springjwt.payload.response.MessageResponse;
 import com.bezkoder.springjwt.repository.QuestionSetsRepository;
 import com.bezkoder.springjwt.repository.UserRepository;
 import com.bezkoder.springjwt.security.services.UserDetailsImpl;
@@ -38,7 +39,7 @@ public class QuestionSetsController {
             questionSets.setUser(user);
         }
         questionSetsRepository.save(questionSets);
-        return ResponseEntity.ok(questionSetRequest.getName() + " Created Successfully");
+        return ResponseEntity.ok(new MessageResponse(questionSetRequest.getName() + " Created Successfully"));
     }
 
     @GetMapping("/get")
@@ -58,7 +59,7 @@ public class QuestionSetsController {
         if (questionSets.isPresent()) {
             return ResponseEntity.ok(questionSets.get());
         }
-        return ResponseEntity.ok("Not found");
+        return ResponseEntity.ok(new MessageResponse("Not found"));
     }
 
     @PutMapping("/update/{id}")
@@ -66,7 +67,7 @@ public class QuestionSetsController {
         QuestionSets questionSets = questionSetsRepository.getById(id);
         questionSets.setName(questionSetRequest.getName());
         questionSetsRepository.save(questionSets);
-        return ResponseEntity.ok(questionSetRequest.getName() + " Updated Successfully");
+        return ResponseEntity.ok(new MessageResponse(questionSetRequest.getName() + " Updated Successfully"));
 
     }
 
@@ -74,6 +75,6 @@ public class QuestionSetsController {
     public ResponseEntity<?> delete(@PathVariable Long id) {
         QuestionSets questionSets = questionSetsRepository.getById(id);
         questionSetsRepository.delete(questionSets);
-        return ResponseEntity.ok(questionSets.getName() + "  Deleted Successfully");
+        return ResponseEntity.ok(new MessageResponse(questionSets.getName() + "  Deleted Successfully"));
     }
 }
