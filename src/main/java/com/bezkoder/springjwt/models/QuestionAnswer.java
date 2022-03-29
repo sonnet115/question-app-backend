@@ -17,7 +17,7 @@ public class QuestionAnswer {
     private String answer;
 
     @JsonIgnore
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "ques_id")
     private Questions questions;
 

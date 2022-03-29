@@ -2,6 +2,8 @@ package com.bezkoder.springjwt.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.util.List;
@@ -22,6 +24,6 @@ public class QuestionSets {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "questionSets")
+    @OneToMany(mappedBy = "questionSets",cascade = CascadeType.ALL)
     private List<Questions> questions;
 }
