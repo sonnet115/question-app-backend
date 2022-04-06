@@ -16,7 +16,6 @@ import javax.validation.constraints.Size;
 @Data
 @Table(name = "users",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = "username"),
                 @UniqueConstraint(columnNames = "email")
         })
 public class User {

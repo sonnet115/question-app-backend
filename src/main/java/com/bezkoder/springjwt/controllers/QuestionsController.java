@@ -67,13 +67,52 @@ public class QuestionsController {
         }
     }
 
+    @PutMapping("/update/{qid}")
+    public ResponseEntity<?> update(@PathVariable Long qid, @RequestBody QuestionRequest questionRequest) {
+        try {
+            Optional<QuestionSets> questionSets = questionSetsRepository.findById(questionRequest.getQueSetID());
+            Optional<Questions> questionsOptional = questionsRepository.findById(qid);
+
+            Questions oldQuestion = questionsOptional.get();
+            questionsRepository.delete(oldQuestion);
+
+            Questions question = new Questions();
+            question.setQuestionText(questionRequest.getQuestionText());
+            question.setType(questionRequest.getType());
+            question.setImagePath(questionRequest.getImage());
+            question.setAudioPath(questionRequest.getAudio());
+            question.setQuestionSets(questionSets.get());
+            questionsRepository.save(question);
+
+
+            System.err.println();
+            for (QuestionOptions qo : questionRequest.getQuestionOptions()) {
+                QuestionOptions questionOptions = new QuestionOptions();
+                questionOptions.setQuestions(question);
+                questionOptions.setOptionName(qo.getOptionName());
+                questionOptions.setOptionValue(qo.getOptionValue());
+                questionsOptionRepository.save(questionOptions);
+            }
+
+            for (String answer : questionRequest.getAnswers()) {
+                QuestionAnswer questionAnswer = new QuestionAnswer();
+                questionAnswer.setAnswer(answer);
+                questionAnswer.setQuestions(question);
+                questionsAnswerRepository.save(questionAnswer);
+            }
+            return ResponseEntity.ok(new MessageResponse("Question Updated Successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.ok(new MessageResponse("Question Creation Failed"));
+        }
+    }
+
     @PostMapping("/get/{ques_set_id}")
     public ResponseEntity<?> getByQuestionSet(@PathVariable Long ques_set_id, @RequestBody PaginationRequest paginationRequest) {
 
         Optional<QuestionSets> optionalQuestionSets = questionSetsRepository.findById(ques_set_id);
         QuestionSets questionSets = optionalQuestionSets.orElse(null);
 
-        PageRequest page = PageRequest.of(paginationRequest.getOffset(), paginationRequest.getLimit());
+        PageRequest page = PageRequest.of(paginationRequest.getPageNumber(), paginationRequest.getLimit());
         Page<Questions> questionsPage = questionsRepository.findAllByQuestionSets(questionSets, page);
 
         List<Questions> questionsList = questionsPage.stream().collect(Collectors.toCollection(ArrayList::new));
@@ -82,7 +121,18 @@ public class QuestionsController {
         response.put("totalRecords", questionsPage.getTotalElements());
         response.put("totalPages", questionsPage.getTotalPages());
         response.put("limit", paginationRequest.getLimit());
-        response.put("offset", paginationRequest.getOffset());
+        response.put("pageNumber", paginationRequest.getPageNumber());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/get-by-id/{ques_id}")
+    public ResponseEntity<?> getByQuestionById(@PathVariable Long ques_id) {
+
+        Optional<Questions> questionsOptional = questionsRepository.findById(ques_id);
+        Questions questions = questionsOptional.orElse(null);
+        HashMap<String, Object> response = new HashMap<>();
+        response.put("questions", questions);
+        response.put("questionSetID", questions.getQuestionSets().getId());
         return ResponseEntity.ok(response);
     }
 }

@@ -18,7 +18,7 @@ public class QuestionOptions {
     private String optionValue;
 
     @JsonIgnore
-    @ManyToOne(cascade = CascadeType.MERGE)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "ques_id")
     private Questions questions;
 

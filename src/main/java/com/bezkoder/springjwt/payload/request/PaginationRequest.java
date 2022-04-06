@@ -7,5 +7,5 @@ import lombok.Setter;
 @Getter
 public class PaginationRequest {
    private int limit;
-   private int offset;
+   private int pageNumber;
 }

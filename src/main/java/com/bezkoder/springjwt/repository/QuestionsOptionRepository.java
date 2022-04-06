@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface QuestionsOptionRepository extends JpaRepository<QuestionOptions, Long> {
+    void deleteAllById(Long longs);
 }
