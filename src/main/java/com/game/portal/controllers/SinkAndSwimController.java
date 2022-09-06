@@ -15,7 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.rmi.server.UID;
+import java.io.File;
 import java.util.Optional;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -37,8 +37,10 @@ public class SinkAndSwimController {
         try {
             MultipartFile image = sinkAndSwimRequest.getImage();
             String imageName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
-
-            if (filesStorageService.save(image, imageName) > 0) {
+            /*String filePath = "/home/ec2-user/jdk1.8.0_202/bin/images";
+            System.err.println(filePath);
+            image.transferTo(new File(filePath + imageName));*/
+            if (filesStorageService.save(image, imageName) >0) {
                 SinkAndSwim sinkAndSwim = new SinkAndSwim();
                 sinkAndSwim.setImage(imageName);
                 sinkAndSwim.setAnswer(sinkAndSwimRequest.getAnswer());
@@ -56,10 +58,11 @@ public class SinkAndSwimController {
                 return ResponseEntity.ok(new MessageResponse("Question Created Successfully"));
             }
 
-            return ResponseEntity.ok(new MessageResponse("Question Creation Failed"));
+            return ResponseEntity.ok(new MessageResponse("Question Creation Failed "));
 
         } catch (Exception e) {
-            return ResponseEntity.ok(new MessageResponse("Question Creation Failed"));
+            System.err.println("try "+ e.getMessage());
+            return ResponseEntity.ok(new MessageResponse("Question Creation Failed try"));
         }
     }
 
@@ -79,5 +82,14 @@ public class SinkAndSwimController {
         }
     }
 
+    @GetMapping("/get")
+    public ResponseEntity<?> getByUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+        Optional<User> optionalUser = userRepository.findById(userDetails.getId());
+        User user = optionalUser.isPresent() ? optionalUser.get() : null;
+
+        return ResponseEntity.ok(sinkAndSwimRepository.findAllByUser(user));
+    }
 
 }

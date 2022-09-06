@@ -9,11 +9,11 @@
         <version>2.6.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.bezkoder</groupId>
-    <artifactId>spring-boot-security-jwt</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>spring-boot-security-jwt</name>
-    <description>Demo project for Spring Boot Security - JWT</description>
+    <groupId>com.game.portal</groupId>
+    <artifactId>question_app_backend</artifactId>
+    <version>0.0.1</version>
+    <name>question_app_backend</name>
+    <description>Game Portal for Teachers</description>
 
     <properties>
         <java.version>1.8</java.version>

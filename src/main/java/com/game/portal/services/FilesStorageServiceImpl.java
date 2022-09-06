@@ -1,11 +1,13 @@
 package com.game.portal.services;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
@@ -15,21 +17,28 @@ import java.util.stream.Stream;
 
 @Service
 public class FilesStorageServiceImpl implements FilesStorageService {
-    private final Path root = Paths.get("images");
+    @Value("${image.path}")
+    private String imagePath;
+
+    //private Path root;
+    private final Path root = Paths.get("./images");
 
     @Override
     public void init() {
-        try {
-            Files.createDirectory(root);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not initialize folder for upload!");
-        }
+//        try {
+//            Files.createDirectory(root);
+//        } catch (IOException e) {
+//            throw new RuntimeException("Could not initialize folder for upload!");
+//        }
     }
 
     @Override
     public long save(MultipartFile file, String fileName) {
         try {
             Files.copy(file.getInputStream(), this.root.resolve(fileName));
+           /* String filePath = "/home/ec2-user/backend_qapp/images/";
+            System.err.println(filePath);
+            file.transferTo(new File(filePath + fileName));*/
             return 1L;
         } catch (Exception e) {
             System.err.println("Could not store the file. Error: " + e.getMessage());
