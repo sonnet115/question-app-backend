@@ -5,6 +5,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class SinkAndSwimRequest {
-    private MultipartFile image;
+    private byte[] image;
     private String answer;
+    private String name;
+    private String active;
 }

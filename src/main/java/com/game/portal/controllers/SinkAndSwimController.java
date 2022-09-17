@@ -8,14 +8,16 @@ import com.game.portal.repository.SinkAndSwimRepository;
 import com.game.portal.repository.UserRepository;
 import com.game.portal.security.services.UserDetailsImpl;
 import com.game.portal.services.FilesStorageService;
+import com.game.portal.specifications.SearchCriteria;
+import com.game.portal.specifications.sinkswim.GetByUserSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
+import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.util.Optional;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -32,14 +34,12 @@ public class SinkAndSwimController {
     @Autowired
     FilesStorageService filesStorageService;
 
-    @PostMapping("/create")
+    /*@PostMapping("/create")
     public ResponseEntity<?> create(@ModelAttribute SinkAndSwimRequest sinkAndSwimRequest) {
         try {
             MultipartFile image = sinkAndSwimRequest.getImage();
             String imageName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
-            /*String filePath = "/home/ec2-user/jdk1.8.0_202/bin/images";
-            System.err.println(filePath);
-            image.transferTo(new File(filePath + imageName));*/
+
             if (filesStorageService.save(image, imageName) >0) {
                 SinkAndSwim sinkAndSwim = new SinkAndSwim();
                 sinkAndSwim.setImage(imageName);
@@ -64,21 +64,58 @@ public class SinkAndSwimController {
             System.err.println("try "+ e.getMessage());
             return ResponseEntity.ok(new MessageResponse("Question Creation Failed try"));
         }
-    }
+    }*/
 
-    @PutMapping("/update/{qid}")
-    public ResponseEntity<?> update(@PathVariable Long qid, @RequestBody SinkAndSwimRequest sinkAndSwimRequest) {
+    @PostMapping("/create")
+    public ResponseEntity<?> create(@RequestBody SinkAndSwimRequest sinkAndSwimRequest) {
         try {
-            Optional<SinkAndSwim> sinkAndSwimOptional = sinkAndSwimRepository.findById(qid);
 
-            SinkAndSwim sinkAndSwim = sinkAndSwimOptional.get();
-            sinkAndSwim.setAnswer(sinkAndSwim.getAnswer());
-            sinkAndSwim.setImage(sinkAndSwim.getImage());
+            SinkAndSwim sinkAndSwim = new SinkAndSwim();
+            sinkAndSwim.setImage(sinkAndSwimRequest.getImage());
+            sinkAndSwim.setAnswer(sinkAndSwimRequest.getAnswer());
+            sinkAndSwim.setName(sinkAndSwimRequest.getName());
+            sinkAndSwim.setActive("1");
+
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+
+            Optional<User> optionalUser = userRepository.findById(userDetails.getId());
+            if (optionalUser.isPresent()) {
+                User user = optionalUser.get();
+                sinkAndSwim.setUser(user);
+            }
             sinkAndSwimRepository.save(sinkAndSwim);
 
-            return ResponseEntity.ok(new MessageResponse("Question Updated Successfully"));
+            return ResponseEntity.ok(new MessageResponse("Object Creation Successfully"));
         } catch (Exception e) {
-            return ResponseEntity.ok(new MessageResponse("Question Creation Failed"));
+            System.err.println("try " + e.getMessage());
+            return ResponseEntity.ok(new MessageResponse("Failed to Create Object"));
+        }
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody SinkAndSwimRequest sinkAndSwimRequest) {
+        try {
+            SinkAndSwim sinkAndSwim = sinkAndSwimRepository.findById(id).get();
+            sinkAndSwim.setImage(sinkAndSwimRequest.getImage());
+            sinkAndSwim.setAnswer(sinkAndSwimRequest.getAnswer());
+            sinkAndSwim.setName(sinkAndSwimRequest.getName());
+            sinkAndSwim.setActive(sinkAndSwimRequest.getActive());
+
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+
+            Optional<User> optionalUser = userRepository.findById(userDetails.getId());
+            if (optionalUser.isPresent()) {
+                User user = optionalUser.get();
+                sinkAndSwim.setUser(user);
+            }
+            sinkAndSwimRepository.save(sinkAndSwim);
+
+            return ResponseEntity.ok(new MessageResponse("Object Updated Successfully"));
+        } catch (Exception e) {
+            System.err.println("try " + e.getMessage());
+            return ResponseEntity.ok(new MessageResponse("Failed to Update Object"));
         }
     }
 
@@ -89,7 +126,23 @@ public class SinkAndSwimController {
         Optional<User> optionalUser = userRepository.findById(userDetails.getId());
         User user = optionalUser.isPresent() ? optionalUser.get() : null;
 
-        return ResponseEntity.ok(sinkAndSwimRepository.findAllByUser(user));
+        return ResponseEntity.ok(sinkAndSwimRepository.findAllByUserAndActive(user, "1"));
+    }
+
+    @PostMapping("/get")
+    public DataTablesOutput<?> getByUser(@RequestBody DataTablesInput input) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+        Optional<User> optionalUser = userRepository.findById(userDetails.getId());
+        User user = optionalUser.isPresent() ? optionalUser.get() : null;
+
+        GetByUserSpecification byUser = new GetByUserSpecification(new SearchCriteria("user", "=", user.getId()));
+        return sinkAndSwimRepository.findAll(input, byUser);
+    }
+
+    @GetMapping("/get/by/{id}")
+    public ResponseEntity<?> getByID(@PathVariable Long id) {
+        return ResponseEntity.ok(sinkAndSwimRepository.findById(id));
     }
 
 }

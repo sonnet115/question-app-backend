@@ -10,13 +10,16 @@ import javax.persistence.*;
 @Data
 public class SinkAndSwim {
     @Id
-    @JsonIgnore
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String image;
+    private byte[] image;
 
     private String answer;
+
+    private String name;
+
+    private String active;
 
     @JsonIgnore
     @ManyToOne
